@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        canvas {
+            border: 0px solid #0a0a0a;
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="particleCanvas" width="1400" height="200"></canvas>
+
+    <script>
+        const canvas = document.getElementById('particleCanvas');
+        const ctx = canvas.getContext('2d');
+        const particles = [];
+
+        class Particle {
+            constructor(x, y, xVel, yVel, color) {
+                this.x = x;
+                this.y = y;
+                this.xVel = xVel;
+                this.yVel = yVel;
+                this.color = color;
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, 1, 0, 2 * Math.PI);
+                ctx.fillStyle = this.color;
+                ctx.fill();
+                ctx.closePath();
+            }
+
+            update() {
+                this.x += this.xVel * 0.5;
+                this.y += this.yVel * 0.5;
+
+                if (this.x < 0 || this.x > 1400) {
+                    this.xVel = -this.xVel;
+                }
+                if (this.y < 0 || this.y > 200) {
+                    this.yVel = -this.yVel;
+                }
+            }
+
+            drawLine(other) {
+                ctx.beginPath();
+                ctx.moveTo(this.x, this.y);
+                ctx.lineTo(other.x, other.y);
+                ctx.strokeStyle = this.color;
+                ctx.lineWidth = 1;
+                ctx.stroke();
+                ctx.closePath();
+            }
+        }
+
+        function createParticles(amount, color) {
+            for (let i = 0; i < amount; i++) {
+                const x = Math.random() * 1400;
+                const y = Math.random() * 200;
+                const xVel = (Math.random() - 0.1) * 1;
+                const yVel = (Math.random() - 0.01) * 1;
+                particles.push(new Particle(x, y, xVel, yVel, color));
+            }
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            for (const particle of particles) {
+                particle.update();
+                particle.draw();
+                for (const otherParticle of particles) {
+                    if (particle !== otherParticle && distance(particle, otherParticle) < 200) {
+                        particle.drawLine(otherParticle);
+                    }
+                }
+            }
+
+            requestAnimationFrame(animate);
+        }
+
+        function distance(p1, p2) {
+            const dx = p1.x - p2.x;
+            const dy = p1.y - p2.y;
+            return Math.sqrt(dx ** 2 + dy ** 2);
+        }
+
+        createParticles(100, '#23e8e8');
+        animate();
+    </script>
+
+</body>
+</html>
